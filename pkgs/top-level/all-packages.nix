@@ -1946,6 +1946,8 @@ in
 
   hebcal = callPackage ../tools/misc/hebcal {};
 
+  hegemon = callPackage ../tools/misc/hegemon { };
+
   hexio = callPackage ../development/tools/hexio { };
 
   hexyl = callPackage ../tools/misc/hexyl { };
