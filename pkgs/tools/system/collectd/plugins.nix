@@ -318,6 +318,26 @@ let
     zfs_arc = {};
     zone = {};
     zookeeper = {};
+
+    gpu_nvidia = {};
+    ipstats = {};
+    slurm = {};
+    write_stackdriver = {};
+    sysevent = {};
+    capabilities = {};
+    dpdk_telemetry = {};
+    buddyinfo = {};
+    logparser = {};
+    check_uptime = {};
+    procevent = {};
+    connectivity = {};
+    ubi = {};
+    dcpmm = {};
+    pcie_errors = {};
+    write_syslog = {};
+    write_influxdb_udp = {};
+    amqp1 = {};
+    redfish = {};
   };
 
   configureFlags =
