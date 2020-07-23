@@ -19,22 +19,28 @@
 , libvirt
 , libxml2
 , libapparmor, libcap_ng, numactl
+, linuxPackages
 , lvm2
 , lua
 , lm_sensors
 , mongoc
 , mosquitto
 , net-snmp
+, openssl
 , perl
+, pkgconfig
 , postgresql
 , protobufc
 , python
+, qpid-cpp
 , rabbitmq-c
 , rdkafka
 , riemann_c_client
 , rrdtool
+, tokyotyrant
 , udev
 , varnish
+, xen
 , yajl
 # Defaults to `null` for all supported plugins,
 # list of plugin names for a custom build
@@ -240,7 +246,7 @@ let
     };
     serial = {};
     sigrok = {
-      buildInputs = stdenv.lib.optionals stdenv.isLinux [ libsigrok udev ];
+      buildInputs = stdenv.lib.optionals stdenv.isLinux [ libsigrok pkgconfig udev ];
     };
     smart = {
       buildInputs = stdenv.lib.optionals stdenv.isLinux [ libatasmart udev ];
@@ -269,7 +275,9 @@ let
     ted = {};
     thermal = {};
     threshold = {};
-    tokyotyrant = {};
+    tokyotyrant = {
+      buildInputs = [ tokyotyrant ];
+    };
     turbostat = {};
     unixsock = {};
     uptime = {};
@@ -313,30 +321,46 @@ let
     };
     write_sensu = {};
     write_tsdb = {};
-    xencpu = {};
+    xencpu = {
+      buildInputs = [ xen ];
+    };
     xmms = {};
     zfs_arc = {};
     zone = {};
     zookeeper = {};
 
-    gpu_nvidia = {};
+    gpu_nvidia = {
+      buildInputs = [
+        (linuxPackages.nvidia_x11.override { libsOnly = true; })
+      ];
+    };
     ipstats = {};
     slurm = {};
-    write_stackdriver = {};
-    sysevent = {};
+    write_stackdriver = {
+      buildInputs = [ yajl curl openssl ];
+    };
+    sysevent = {
+      buildInputs = [ yajl ];
+    };
     capabilities = {};
     dpdk_telemetry = {};
     buddyinfo = {};
     logparser = {};
     check_uptime = {};
-    procevent = {};
-    connectivity = {};
+    procevent = {
+      buildInputs = [ yajl ];
+    };
+    connectivity = {
+      buildInputs = [ libmnl yajl ];
+    };
     ubi = {};
     dcpmm = {};
     pcie_errors = {};
     write_syslog = {};
     write_influxdb_udp = {};
-    amqp1 = {};
+    amqp1 = {
+      buildInputs = [ qpid-cpp ];
+    };
     redfish = {};
   };
 
