@@ -9,7 +9,7 @@ lib.makeOverridable (
 {cvsRoot, module, tag ? null, date ? null, sha256}:
 
 stdenvNoCC.mkDerivation {
-  name = "cvs-export";
+  name = "cvs-export-${tag}-${lib.replaceStrings ["/"] ["_"] module}";
   builder = ./builder.sh;
   nativeBuildInputs = [cvs openssh];
 
