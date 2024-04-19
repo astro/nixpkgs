@@ -1,22 +1,29 @@
-commit f2d0ff85e05b49e9d11735ce4810b242c1dbf5af
-Author: John Ericson <John.Ericson@Obsidian.Systems>
-Date:   Wed Sep 1 15:38:56 2021 +0000
+From 3b25c2b2a00722de88c6b8b26d8acf954e23849a Mon Sep 17 00:00:00 2001
+From: John Ericson <John.Ericson@Obsidian.Systems>
+Date: Fri, 19 Apr 2024 19:03:07 +0200
+Subject: [PATCH 2/2] Make should not hit configure
 
-    Make should not hit configure
+---
+ tools/compat/Makefile | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index b5adb8a5f2e9..1a914ef16739 100644
+diff --git a/tools/compat/Makefile b/tools/compat/Makefile
+index 1149fb31c333..4e278c1d9d55 100644
 --- a/tools/compat/Makefile
 +++ b/tools/compat/Makefile
-@@ -76,11 +76,6 @@ _CURDIR:=	${.CURDIR}
- 
- SRCS:=		${SRCS:M*.c}
+@@ -82,12 +82,6 @@ CONFIGURE_ARGS=	--cache-file=config.cache
+ CONFIGURE_ARGS+=--silent
+ .endif
  
 -config.cache: include/.stamp configure nbtool_config.h.in defs.mk.in
 -	rm -f ${.TARGET}
--	CC=${HOST_CC:Q} CFLAGS=${HOST_CFLAGS:Q} LDFLAGS=${HOST_LDFLAGS:Q} \
--		${HOST_SH} ${.CURDIR}/configure --cache-file=config.cache
+-	CC=${HOST_CC:Q} CFLAGS=${HOST_CFLAGS:Q} CPPFLAGS=${HOST_CPPFLAGS:Q} \
+-		LDFLAGS=${HOST_LDFLAGS:Q} \
+-		${HOST_SH} ${.CURDIR}/configure ${CONFIGURE_ARGS}
 -
  defs.mk: config.cache
  	@touch ${.TARGET}
  
+-- 
+2.42.0
+
