@@ -222,6 +222,10 @@ in makeScopeWithSplicing' {
       ./compat-no-force-native.patch
     ];
 
+    preBuild = ''
+      export NIX_CFLAGS_COMPILE+=" -I$(pwd) -I$(pwd)/../../lib/libc/include"
+    '';
+
     preInstall = ''
       makeFlagsArray+=('INSTALL_FILE=''${INSTALL} ''${COPY} ''${PRESERVE} ''${RENAME}')
       makeFlagsArray+=('INSTALL_DIR=''${INSTALL} -d')
