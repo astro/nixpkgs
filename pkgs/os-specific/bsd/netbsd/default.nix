@@ -174,6 +174,8 @@ in makeScopeWithSplicing' {
       ./compat-setup-hook.sh
     ];
 
+    hardeningDisable = [ "fortify" ];
+
     preConfigure = ''
       make include/.stamp configure nbtool_config.h.in defs.mk.in
     '';
