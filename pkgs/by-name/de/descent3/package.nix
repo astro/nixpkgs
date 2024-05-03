@@ -1,22 +1,22 @@
 { lib, stdenv, fetchFromGitHub
 , cmake, ninja
-, ncurses, SDL, SDL_image
+, ncurses, SDL, SDL_image, zlib
 # , pkgsi686Linux
 }:
 
 stdenv.mkDerivation {
   pname = "descent3";
-  version = "unstable-2024-04-19";
+  version = "unstable-2024-04-28";
 
-  src = /home/stephan/programs/descent3;
-  _src = fetchFromGitHub {
-    owner = "kevinbentley";
+  _src = /home/stephan/programs/descent3;
+  src = fetchFromGitHub {
+    owner = "DescentDevelopers";
     repo = "Descent3";
-    rev = "99f86c5c1fb76da0a19ce6e9a0870fbc78dfe3fb";
-    hash = "sha256-kPmuCb/In9LUvf0UAoELrLTZiemcWEaCHe5OTfiGV8w=";
+    rev = "7cd46b7b52b07f2d94b9b50fa1b6efdc3c2a4512";
+    hash = "sha256-LieLXtk/iBEM05eijxc9q+OtDhKEXGbaHzapTytVFBg=";
   };
 
-  postPatch = ''
+  _postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-warn -Wno-address-of-temporary ""
     substituteInPlace scripts/CMakeLists.txt \
@@ -27,7 +27,7 @@ stdenv.mkDerivation {
     cmake ninja
   ];
 
-  buildInputs = [ ncurses SDL SDL_image ];
+  buildInputs = [ ncurses SDL SDL_image zlib ];
 
   # LD_LIBRARY_PATH = lib.concatMapStringsSep ":" (lib: "${lib}/lib") (
   #   with pkgsi686Linux.xorg; [
@@ -37,7 +37,7 @@ stdenv.mkDerivation {
   HOME = "${placeholder "out"}/share";
 
   cmakeFlags = [ "-DD3_GAMEDIR=Descent3" ];
-  cmakeBuildType="Debug";
+  #cmakeBuildType="Debug";
   # ninjaFlags = [ "Descent3" ];
 
   # error: boost::bad_format_string: format-string is ill-formed
@@ -49,4 +49,8 @@ stdenv.mkDerivation {
   #   ${pkgsi686Linux.glibc.bin}/bin/ldd ../scripts/hogutils/hogUtils-i686
   #   ../scripts/hogutils/hogUtils-i686 --help
   # '';
+  installPhase = ''
+    mkdir -p $out/bin
+    cp Descent3/Descent3 $out/bin/
+  '';
 }
