@@ -1,6 +1,6 @@
 { lib, stdenv, fetchFromGitHub
 , cmake, ninja
-, ncurses, SDL, SDL_image, zlib
+, ncurses, SDL2, SDL2_image, zlib
 # , pkgsi686Linux
 }:
 
@@ -12,8 +12,8 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "DescentDevelopers";
     repo = "Descent3";
-    rev = "7cd46b7b52b07f2d94b9b50fa1b6efdc3c2a4512";
-    hash = "sha256-LieLXtk/iBEM05eijxc9q+OtDhKEXGbaHzapTytVFBg=";
+    rev = "fd615490803d08f46a407ce697e741f697519125";
+    hash = "sha256-6tjWfsJE/L+wS9/JBUnGNZ7vyITyEr9IvZbVtjkT6yc=";
   };
 
   _postPatch = ''
@@ -27,7 +27,7 @@ stdenv.mkDerivation {
     cmake ninja
   ];
 
-  buildInputs = [ ncurses SDL SDL_image zlib ];
+  buildInputs = [ ncurses SDL2 SDL2_image zlib ];
 
   # LD_LIBRARY_PATH = lib.concatMapStringsSep ":" (lib: "${lib}/lib") (
   #   with pkgsi686Linux.xorg; [
