@@ -3,15 +3,19 @@
 , runCommand
 , fetchurl
 , fetchFromGitHub
+, fetchNpmDeps
 , fetchPypi
 
 # Build time
+, buildNpmPackage
 , cmake
 , ensureNewerSourcesHook
 , fmt
 , git
 , makeWrapper
 , nasm
+, nodejs
+, importNpmLock
 , pkg-config
 , which
 
@@ -149,7 +153,8 @@ let
     pname = "ceph-common";
     inherit src version;
 
-    sourceRoot = "ceph-${version}/src/python-common";
+    preUpack = "set -x";
+    sourceRoot = "${src.name}/src/python-common";
 
     propagatedBuildInputs = [
       pyyaml
@@ -187,7 +192,7 @@ let
         cargoRoot = "src/_bcrypt";
         cargoDeps = rustPlatform.fetchCargoTarball {
           inherit src;
-          sourceRoot = "${pname}-${version}/${cargoRoot}";
+          sourceRoot = cargoRoot;
           name = "${pname}-${version}";
           hash = "sha256-lDWX69YENZFMu7pyBmavUZaalGvFqbHSHfkwkzmDQaY=";
         };
@@ -212,7 +217,7 @@ let
 
         cargoDeps = rustPlatform.fetchCargoTarball {
           inherit src;
-          sourceRoot = let cargoRoot = "src/rust"; in "${old.pname}-${cryptographyOverrideVersion}/${cargoRoot}";
+          sourceRoot = "src/rust";
           name = "${old.pname}-${cryptographyOverrideVersion}";
           hash = "sha256-gFfDTc2QWBWHBCycVH1dYlCsWQMVcRZfOBIau+njtDU=";
         };
@@ -284,8 +289,10 @@ let
     kubernetes
     natsort
     numpy
+    parquet
     pecan
     prettytable
+    pyarrow
     pyjwt
     pyopenssl
     python-dateutil
@@ -310,9 +317,12 @@ let
   inherit (ceph-python-env.python) sitePackages;
 
   version = "18.2.1";
-  src = fetchurl {
-    url = "https://download.ceph.com/tarballs/ceph-${version}.tar.gz";
-    hash = "sha256-gHWwNHf0KtI7Hv0MwaCqP6A3YR/AWakfUZTktRyddko=";
+  src = fetchFromGitHub {
+    owner = "ceph";
+    repo = "ceph";
+    rev = "v${version}";
+    hash = "sha256-QK+EslPWLowi98zHAgYyIKBg1ZKf5ikwmt1nznIwe1Q=";
+    fetchSubmodules = true;
   };
 in rec {
   ceph = stdenv.mkDerivation {
@@ -323,6 +333,13 @@ in rec {
       substituteInPlace cmake/modules/Finduring.cmake \
         --replace-fail "liburing.a liburing" "uring"
     '';
+    # postPatch = ''
+    #   set -x
+    #   grep -r write_cephadm_logrotate_config
+    #   substituteInPlace src/cephadm/cephadmlib/logging.py \
+    #     --replace-fail "write_cephadm_logrotate_config(ctx)" ""
+    # '';
+
 
     nativeBuildInputs = [
       cmake
@@ -415,6 +432,7 @@ in rec {
 
       "-DWITH_CEPHFS_SHELL:BOOL=ON"
       "-DWITH_SYSTEMD:BOOL=OFF"
+      "-DENABLE_GIT_VERSION=OFF"
       # `WITH_JAEGER` requires `thrift` as a depenedncy (fine), but the build fails with:
       #     CMake Error at src/opentelemetry-cpp-stamp/opentelemetry-cpp-build-Release.cmake:49 (message):
       #     Command failed: 2
@@ -449,6 +467,10 @@ in rec {
       # WITH_XFS has been set default ON from Ceph 16, keeping it optional in nixpkgs for now
       ''-DWITH_XFS=${if optLibxfs != null then "ON" else "OFF"}''
     ] ++ lib.optional stdenv.isLinux "-DWITH_SYSTEM_LIBURING=ON";
+
+    preInstall = ''
+      ln -s ${ceph-dashboard} src/pybind/mgr/dashboard/frontend/dist
+    '';
 
     postFixup = ''
       wrapPythonPrograms
@@ -495,4 +517,46 @@ in rec {
       substituteInPlace $out/bin/ceph          --replace ${ceph} $out
       substituteInPlace $out/bin/.ceph-wrapped --replace ${ceph} $out
    '';
+
+  ceph-dashboard = buildNpmPackage {
+    pname = "ceph-dashboard";
+    inherit version src;
+
+    sourceRoot = "${src.name}/src/pybind/mgr/dashboard/frontend";
+
+    nativeBuildInputs = [
+      # makeWrapper
+      # nodejs
+      # importNpmLock.npmConfigHook
+      # python3Packages.wrapPython
+    ];
+
+    npmConfigHook = importNpmLock.npmConfigHook;
+    # npmDeps = fetchNpmDeps {
+    #   src = "${src}/src/pybind/mgr/dashboard/frontend";
+    #   hash = "sha256-j8KTrpf0mQKbP1rHCc8QT1FQ3gC4sDSCyLFrhNXlOtg=";
+    # # };
+    # npmDeps = importNpmLock {
+    #   npmRoot = "${src}/src/pybind/mgr/dashboard/frontend";
+    #   #./dashboard;
+    # };
+    npmDeps = importNpmLock {
+      npmRoot = ./dashboard;
+      # package = lib.importJSON ./dashboard/package.json;
+      # packageLock = lib.importJSON ./dashboard/package-lock.json;
+      # depsHash = "sha256-EfPL2ODs5p/5HbNNuN3ebwqYAxUSbkbgV9Xk/mlE3No=";
+    };
+    # npmDepsHash = "sha256-fR6GMBOrwYvkIG1puT7mwssr0a2JHclTT19GThAJrtY=";
+    # buildPhase = ''
+    #   npm ng build --configuration=en-US
+    # '';
+
+    # makeCacheWritable = true;
+    env.NODE_ENV = "production";
+    preInstall = ''
+      export PATH=$PATH:`pwd`/node_modules/.bin
+    '';
+    npmBuildScript = [ "build" ];
+    npmFlags = [ "--loglevel=verbose" "--audit=false" "--save-exact=true" "--legacy-peer-deps=true" ];
+  };
 }
