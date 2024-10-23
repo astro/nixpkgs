@@ -4842,6 +4842,8 @@ self: super: with self; {
 
   future-typing = callPackage ../development/python-modules/future-typing { };
 
+  futurist = callPackage ../development/python-modules/futurist { };
+
   fuzzyfinder = callPackage ../development/python-modules/fuzzyfinder { };
 
   fuzzytm = callPackage ../development/python-modules/fuzzytm { };
@@ -9558,7 +9560,15 @@ self: super: with self; {
 
   oslo-log = callPackage ../development/python-modules/oslo-log { };
 
+  oslo-messaging = callPackage ../development/python-modules/oslo-messaging { };
+
+  oslo-metrics = callPackage ../development/python-modules/oslo-metrics { };
+
+  oslo-middleware = callPackage ../development/python-modules/oslo-middleware { };
+
   oslo-serialization = callPackage ../development/python-modules/oslo-serialization { };
+
+  oslo-service = callPackage ../development/python-modules/oslo-service { };
 
   oslo-utils = callPackage ../development/python-modules/oslo-utils {
     qemu = pkgs.qemu;
